@@ -16,6 +16,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@anathea/shared": "*"
+    "@anathea/shared": "*",
+    "@prisma/client": "^6.19.3"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.3",
+    "tsx": "^4.23.15"
   }
 }

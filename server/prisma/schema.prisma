@@ -1,0 +1,389 @@
+// ═══════════════════════════════════════════
+// ANATHEA — Prisma Schema
+// Base de datos: anathea (PostgreSQL 18)
+// ═══════════════════════════════════════════
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════
+// ENTIDADES ANATÓMICAS CORE
+// ═══════════════════════════════════════════
+
+/// Sistema anatómico (ej: Esquelético, Muscular, Nervioso)
+model AnatomicalSystem {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  nameEs      String   @map("name_es")
+  nameLa      String?  @map("name_la")
+  description String?  @db.Text
+  slug        String   @unique
+  sortOrder   Int      @map("sort_order")
+  color       String?
+  icon        String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  organs Organ[]
+  layers Layer[]
+
+  @@map("anatomical_systems")
+}
+
+/// Región anatómica (ej: Cabeza, Tórax, Extremidad Superior)
+model Region {
+  id          String   @id @default(uuid())
+  name        String
+  nameEs      String   @map("name_es")
+  nameLa      String?  @map("name_la")
+  description String?  @db.Text
+  slug        String   @unique
+  sortOrder   Int      @default(0) @map("sort_order")
+
+  parentId String?  @map("parent_id")
+  parent   Region?  @relation("RegionHierarchy", fields: [parentId], references: [id])
+  children Region[] @relation("RegionHierarchy")
+
+  organs     Organ[]
+  structures Structure[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("regions")
+}
+
+/// Órgano (ej: Fémur, Corazón, Pulmón)
+model Organ {
+  id          String   @id @default(uuid())
+  name        String
+  nameEs      String   @map("name_es")
+  nameLa      String?  @map("name_la")
+  description String?  @db.Text
+  slug        String   @unique
+  sortOrder   Int      @default(0) @map("sort_order")
+
+  systemId String           @map("system_id")
+  system   AnatomicalSystem @relation(fields: [systemId], references: [id])
+  regionId String?          @map("region_id")
+  region   Region?          @relation(fields: [regionId], references: [id])
+
+  structures Structure[]
+  models     Model3D[]
+  images     AnatomyImage[]
+  conditions OrganCondition[]
+  references OrganReference[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([systemId])
+  @@index([regionId])
+  @@map("organs")
+}
+
+/// Estructura anatómica (ej: Trocánter Mayor, Ventrículo Izquierdo)
+model Structure {
+  id          String  @id @default(uuid())
+  name        String
+  nameEs      String  @map("name_es")
+  nameLa      String? @map("name_la")
+  description String? @db.Text
+  slug        String  @unique
+  sortOrder   Int     @default(0) @map("sort_order")
+  tissueType  String? @map("tissue_type")
+
+  organId  String?    @map("organ_id")
+  organ    Organ?     @relation(fields: [organId], references: [id])
+  regionId String?    @map("region_id")
+  region   Region?    @relation(fields: [regionId], references: [id])
+
+  // Jerarquía recursiva: Structure → SubStructure → Sub-SubStructure...
+  parentId String?     @map("parent_id")
+  parent   Structure?  @relation("StructureHierarchy", fields: [parentId], references: [id])
+  children Structure[] @relation("StructureHierarchy")
+
+  models           Model3D[]
+  images           AnatomyImage[]
+  relationsFrom    AnatomicalRelation[] @relation("RelationFrom")
+  relationsTo      AnatomicalRelation[] @relation("RelationTo")
+  conditions       StructureCondition[]
+  layerAssignments LayerStructure[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([organId])
+  @@index([regionId])
+  @@index([parentId])
+  @@map("structures")
+}
+
+// ═══════════════════════════════════════════
+// RELACIONES Y CAPAS
+// ═══════════════════════════════════════════
+
+/// Relación entre estructuras anatómicas
+model AnatomicalRelation {
+  id           String  @id @default(uuid())
+  relationType String  @map("relation_type")
+  description  String? @db.Text
+
+  fromStructureId String    @map("from_structure_id")
+  fromStructure   Structure @relation("RelationFrom", fields: [fromStructureId], references: [id])
+  toStructureId   String    @map("to_structure_id")
+  toStructure     Structure @relation("RelationTo", fields: [toStructureId], references: [id])
+
+  @@unique([fromStructureId, toStructureId, relationType])
+  @@map("anatomical_relations")
+}
+
+/// Capa anatómica (ej: Piel, Fascia, Músculo, Hueso)
+model Layer {
+  id      String  @id @default(uuid())
+  name    String
+  nameEs  String  @map("name_es")
+  depth   Int
+  color   String?
+  opacity Float   @default(1.0)
+
+  systemId String?           @map("system_id")
+  system   AnatomicalSystem? @relation(fields: [systemId], references: [id])
+
+  structures LayerStructure[]
+
+  @@map("layers")
+}
+
+/// Asignación de estructura a una capa
+model LayerStructure {
+  id          String    @id @default(uuid())
+  layerId     String    @map("layer_id")
+  layer       Layer     @relation(fields: [layerId], references: [id])
+  structureId String    @map("structure_id")
+  structure   Structure @relation(fields: [structureId], references: [id])
+
+  @@unique([layerId, structureId])
+  @@map("layer_structures")
+}
+
+// ═══════════════════════════════════════════
+// INFORMACIÓN CLÍNICA
+// ═══════════════════════════════════════════
+
+/// Condición clínica educativa (ej: Osteoporosis, Fractura)
+model ClinicalCondition {
+  id          String  @id @default(uuid())
+  name        String
+  nameEs      String  @map("name_es")
+  description String? @db.Text
+  category    String?
+  severity    String?
+
+  organs     OrganCondition[]
+  structures StructureCondition[]
+  references ConditionReference[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("clinical_conditions")
+}
+
+/// Relación órgano ↔ condición clínica
+model OrganCondition {
+  organId     String            @map("organ_id")
+  organ       Organ             @relation(fields: [organId], references: [id])
+  conditionId String            @map("condition_id")
+  condition   ClinicalCondition @relation(fields: [conditionId], references: [id])
+  notes       String?           @db.Text
+
+  @@id([organId, conditionId])
+  @@map("organ_conditions")
+}
+
+/// Relación estructura ↔ condición clínica
+model StructureCondition {
+  structureId String            @map("structure_id")
+  structure   Structure         @relation(fields: [structureId], references: [id])
+  conditionId String            @map("condition_id")
+  condition   ClinicalCondition @relation(fields: [conditionId], references: [id])
+  notes       String?           @db.Text
+
+  @@id([structureId, conditionId])
+  @@map("structure_conditions")
+}
+
+// ═══════════════════════════════════════════
+// REFERENCIAS BIBLIOGRÁFICAS
+// ═══════════════════════════════════════════
+
+/// Referencia bibliográfica (libros, artículos, atlas)
+model BibliographicReference {
+  id      String  @id @default(uuid())
+  title   String
+  authors String?
+  source  String
+  year    Int?
+  edition String?
+  isbn    String?
+  doi     String?
+  url     String?
+  type    String
+
+  organs     OrganReference[]
+  conditions ConditionReference[]
+
+  @@map("bibliographic_references")
+}
+
+/// Relación órgano ↔ referencia bibliográfica
+model OrganReference {
+  organId     String                 @map("organ_id")
+  organ       Organ                  @relation(fields: [organId], references: [id])
+  referenceId String                 @map("reference_id")
+  reference   BibliographicReference @relation(fields: [referenceId], references: [id])
+  pageRange   String?                @map("page_range")
+  notes       String?
+
+  @@id([organId, referenceId])
+  @@map("organ_references")
+}
+
+/// Relación condición ↔ referencia bibliográfica
+model ConditionReference {
+  conditionId String                 @map("condition_id")
+  condition   ClinicalCondition      @relation(fields: [conditionId], references: [id])
+  referenceId String                 @map("reference_id")
+  reference   BibliographicReference @relation(fields: [referenceId], references: [id])
+
+  @@id([conditionId, referenceId])
+  @@map("condition_references")
+}
+
+// ═══════════════════════════════════════════
+// ACTIVOS MULTIMEDIA
+// ═══════════════════════════════════════════
+
+/// Modelo 3D (GLB/glTF)
+model Model3D {
+  id       String  @id @default(uuid())
+  filename String
+  format   String
+  path     String
+  fileSize Int?    @map("file_size")
+  author   String?
+  source   String?
+  license  String?
+  version  String?
+  metadata Json?
+
+  organId     String?    @map("organ_id")
+  organ       Organ?     @relation(fields: [organId], references: [id])
+  structureId String?    @map("structure_id")
+  structure   Structure? @relation(fields: [structureId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([organId])
+  @@index([structureId])
+  @@map("models_3d")
+}
+
+/// Imagen anatómica
+model AnatomyImage {
+  id       String  @id @default(uuid())
+  filename String
+  path     String
+  altText  String? @map("alt_text")
+  caption  String?
+  author   String?
+  source   String?
+  license  String?
+
+  organId     String?    @map("organ_id")
+  organ       Organ?     @relation(fields: [organId], references: [id])
+  structureId String?    @map("structure_id")
+  structure   Structure? @relation(fields: [structureId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("anatomy_images")
+}
+
+// ═══════════════════════════════════════════
+// USUARIOS Y AUTENTICACIÓN
+// ═══════════════════════════════════════════
+
+/// Usuario de la plataforma
+model User {
+  id       String  @id @default(uuid())
+  email    String  @unique
+  password String
+  name     String
+  avatar   String?
+  isActive Boolean @default(true) @map("is_active")
+
+  roleId String @map("role_id")
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  favorites Favorite[]
+  history   UserHistory[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+/// Rol de usuario (admin, editor, student, viewer)
+model Role {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+  permissions Json
+
+  users User[]
+
+  @@map("roles")
+}
+
+/// Favorito del usuario
+model Favorite {
+  id         String @id @default(uuid())
+  entityType String @map("entity_type")
+  entityId   String @map("entity_id")
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, entityType, entityId])
+  @@map("favorites")
+}
+
+/// Historial de navegación del usuario
+model UserHistory {
+  id         String  @id @default(uuid())
+  action     String
+  entityType String  @map("entity_type")
+  entityId   String  @map("entity_id")
+  metadata   Json?
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("user_history")
+}
