@@ -1,0 +1,16 @@
+{
+  "name": "@anathea/client",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Frontend de ANATHEA — React + TypeScript + Vite + Tailwind CSS + Three.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anathea/shared": "*"
+  }
+}
