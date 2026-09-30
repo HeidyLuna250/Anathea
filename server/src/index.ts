@@ -1,8 +1,11 @@
-// ═══════════════════════════════════════════
-// ANATHEA — Server Entry Point
-// ═══════════════════════════════════════════
-// Este archivo será el punto de entrada del servidor Express.
-// Se configurará en la Fase 3 (Backend y API).
+import app from './app';
+import { logger } from './utils/logger';
+import dotenv from 'dotenv';
 
-console.log('🧬 ANATHEA Server — Placeholder activo');
-console.log('📌 Este archivo se completará en la Fase 3.');
+dotenv.config();
+
+const PORT = process.env.PORT || 3001;
+
+app.listen(PORT, () => {
+  logger.info(`🧬 ANATHEA Server is running on port ${PORT}`);
+});
