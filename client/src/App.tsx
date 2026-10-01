@@ -5,6 +5,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { HomePage } from './pages/HomePage';
+import { SystemPage } from './pages/SystemPage';
 
 export function App() {
   return (
@@ -12,7 +13,7 @@ export function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          {/* Futuras rutas para el visor 3D, sistemas individuales, etc. */}
+          <Route path="/sistema/:slug" element={<SystemPage />} />
           <Route path="*" element={<HomePage />} />
         </Routes>
       </Layout>

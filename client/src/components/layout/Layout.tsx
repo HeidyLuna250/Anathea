@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════
 
 import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 import { useQuery } from '@tanstack/react-query';
@@ -29,7 +30,13 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeSystem, setActiveSystem] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Obtener el slug activo basado en la URL (/sistema/:slug)
+  const activeSystem = location.pathname.startsWith('/sistema/') 
+    ? location.pathname.split('/')[2] 
+    : null;
 
   const { data: systems = [], isLoading } = useQuery({
     queryKey: ['anatomical-systems'],
@@ -37,7 +44,11 @@ export function Layout({ children }: LayoutProps) {
   });
 
   const handleSelectSystem = (slug: string) => {
-    setActiveSystem(slug === activeSystem ? null : slug);
+    if (activeSystem === slug) {
+      navigate('/');
+    } else {
+      navigate(`/sistema/${slug}`);
+    }
   };
 
   return (
