@@ -5,8 +5,9 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Viewer3D } from '../components/viewer3d/Viewer3D';
-import { Layers, Activity, FileText } from 'lucide-react';
-import { useState } from 'react';
+import { Layers, Activity, FileText, Target } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useAnatomyStore } from '../store/useAnatomyStore';
 
 // API Fetcher
 async function fetchSystem(slug: string) {
@@ -22,6 +23,15 @@ export function SystemPage() {
   const { slug } = useParams<{ slug: string }>();
   const [wireframe, setWireframe] = useState(false);
   
+  // Estado global para la parte seleccionada
+  const selectedPartName = useAnatomyStore((state) => state.selectedPartName);
+  const setSelectedPart = useAnatomyStore((state) => state.setSelectedPart);
+  
+  // Limpiar selección cuando cambias de sistema
+  useEffect(() => {
+    setSelectedPart(null);
+  }, [slug, setSelectedPart]);
+
   const { data: system, isLoading, error } = useQuery({
     queryKey: ['anatomical-system', slug],
     queryFn: () => fetchSystem(slug!),
@@ -53,7 +63,6 @@ export function SystemPage() {
       
       {/* 3D Canvas Area */}
       <div className="flex-1 relative bg-surface-950">
-        {/* Usamos un modelo placeholder local hasta tener los oficiales */}
         <Viewer3D 
           modelPath="/models/placeholder.glb" 
           wireframe={wireframe}
@@ -85,9 +94,22 @@ export function SystemPage() {
           <p className="text-xs text-surface-200/60 font-mono">{system.nameLa || system.name}</p>
         </header>
 
+        {/* 🎯 SECCIÓN INTERACTIVA (PILOTO 3D) */}
+        {selectedPartName && (
+          <div className="bg-primary-500/10 border border-primary-500/20 rounded-xl p-4 animate-slide-up">
+            <h3 className="text-xs font-bold text-primary-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+              <Target size={14} /> Selección Activa
+            </h3>
+            <p className="text-lg font-semibold text-white">{selectedPartName.replace(/_/g, ' ')}</p>
+            <p className="text-xs text-surface-200/60 mt-1">
+              Información específica del órgano no encontrada en la base de datos temporal.
+            </p>
+          </div>
+        )}
+
         <section>
           <h3 className="text-sm font-semibold text-primary-300 flex items-center gap-2 mb-2">
-            <FileText size={16} /> Descripción
+            <FileText size={16} /> Descripción General
           </h3>
           <p className="text-sm text-surface-200/80 leading-relaxed text-justify">
             {system.description}
