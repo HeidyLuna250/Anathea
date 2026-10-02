@@ -6,17 +6,21 @@
   "description": "Frontend de ANATHEA — React + TypeScript + Vite + Tailwind CSS + Three.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@anathea/shared": "*",
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.1",
     "@tanstack/react-query": "^5.104.0",
+    "axios": "^1.20.0",
     "lucide-react": "^1.49.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-router-dom": "^7.18.4",
+    "three": "^0.186.1",
     "use-sync-external-store": "^1.7.0",
     "zustand": "^5.0.15"
   },

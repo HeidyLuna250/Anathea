@@ -14,6 +14,8 @@ export interface AnatomicalSystem {
   color?: string | null;
   icon?: string | null;
   isActive: boolean;
+  organs?: Organ[];
+  layers?: Layer[];
   createdAt: string;
   updatedAt: string;
 }

@@ -35,14 +35,7 @@ const SYSTEM_ICONS: Record<string, ReactNode> = {
   reproductor: <Baby size={18} />,
 };
 
-interface AnatomicalSystem {
-  id: string;
-  name: string;
-  nameEs: string;
-  slug: string;
-  color: string;
-  icon: string;
-}
+import type { AnatomicalSystem } from '@anathea/shared';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -98,7 +91,7 @@ export function Sidebar({ isOpen, systems, activeSystem, onSelectSystem, isLoadi
                     {/* Icon with system color */}
                     <span
                       className="flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
-                      style={{ color: system.color }}
+                      style={{ color: system.color || undefined }}
                     >
                       {SYSTEM_ICONS[system.slug] || <Bone size={18} />}
                     </span>
@@ -110,7 +103,7 @@ export function Sidebar({ isOpen, systems, activeSystem, onSelectSystem, isLoadi
                     {isActive && (
                       <span
                         className="w-1.5 h-1.5 rounded-full animate-pulse-glow"
-                        style={{ backgroundColor: system.color }}
+                        style={{ backgroundColor: system.color || '#38bdf8' }}
                       />
                     )}
 

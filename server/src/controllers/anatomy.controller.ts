@@ -2,11 +2,11 @@
 // ANATHEA — Anatomy Controller
 // ═══════════════════════════════════════════
 
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../utils/prisma';
-import { logger } from '../utils/logger';
+import { NotFoundError } from '../utils/errors';
 
-export const getSystems = async (req: Request, res: Response) => {
+export const getSystems = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const systems = await prisma.anatomicalSystem.findMany({
       where: { isActive: true },
@@ -14,14 +14,13 @@ export const getSystems = async (req: Request, res: Response) => {
     });
     res.json(systems);
   } catch (error) {
-    logger.error('Error fetching anatomical systems:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 };
 
-export const getSystemBySlug = async (req: Request, res: Response) => {
-  const { slug } = req.params;
+export const getSystemBySlug = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const slug = String(req.params.slug);
     const system = await prisma.anatomicalSystem.findUnique({
       where: { slug },
       include: {
@@ -32,13 +31,12 @@ export const getSystemBySlug = async (req: Request, res: Response) => {
     });
 
     if (!system) {
-      return res.status(404).json({ error: 'System not found' });
+      throw new NotFoundError(`Sistema anatómico con slug '${slug}' no encontrado`);
     }
 
     res.json(system);
   } catch (error) {
-    logger.error(`Error fetching system ${slug}:`, error);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 };
 

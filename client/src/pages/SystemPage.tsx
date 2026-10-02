@@ -8,16 +8,7 @@ import { Viewer3D } from '../components/viewer3d/Viewer3D';
 import { Layers, Activity, FileText, Target } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAnatomyStore } from '../store/useAnatomyStore';
-
-// API Fetcher
-async function fetchSystem(slug: string) {
-  const res = await fetch(`/api/anatomy/systems/${slug}`);
-  if (!res.ok) {
-    if (res.status === 404) throw new Error('Sistema no encontrado');
-    throw new Error('Error de red');
-  }
-  return res.json();
-}
+import { getAnatomicalSystemBySlug } from '../services/api';
 
 export function SystemPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -34,7 +25,7 @@ export function SystemPage() {
 
   const { data: system, isLoading, error } = useQuery({
     queryKey: ['anatomical-system', slug],
-    queryFn: () => fetchSystem(slug!),
+    queryFn: () => getAnatomicalSystemBySlug(slug!),
     enabled: !!slug,
   });
 
@@ -66,7 +57,7 @@ export function SystemPage() {
         <Viewer3D 
           modelPath="/models/placeholder.glb" 
           wireframe={wireframe}
-          color={system.color}
+          color={system.color || undefined}
         />
         
         {/* Floating Controls Overlay */}
@@ -87,7 +78,10 @@ export function SystemPage() {
           <div className="flex items-center gap-3 mb-2">
             <span 
               className="w-3 h-3 rounded-full shadow-glow"
-              style={{ backgroundColor: system.color, boxShadow: `0 0 10px ${system.color}` }}
+              style={{
+                backgroundColor: system.color || '#38bdf8',
+                boxShadow: system.color ? `0 0 10px ${system.color}` : 'none',
+              }}
             />
             <h1 className="text-xl font-bold text-white">{system.nameEs}</h1>
           </div>

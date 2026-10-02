@@ -219,9 +219,14 @@ async function main() {
   ];
 
   for (const layer of layersData) {
-    await prisma.layer.create({ data: layer });
+    const existing = await prisma.layer.findFirst({
+      where: { name: layer.name },
+    });
+    if (!existing) {
+      await prisma.layer.create({ data: layer });
+    }
   }
-  console.log(`   ✅ ${layersData.length} capas anatómicas creadas\n`);
+  console.log(`   ✅ Capas anatómicas verificadas/creadas\n`);
 
   // ═══════════════════════════════════════════
   // REFERENCIAS BIBLIOGRÁFICAS BASE
@@ -277,9 +282,14 @@ async function main() {
   ];
 
   for (const ref of references) {
-    await prisma.bibliographicReference.create({ data: ref });
+    const existing = await prisma.bibliographicReference.findFirst({
+      where: { title: ref.title },
+    });
+    if (!existing) {
+      await prisma.bibliographicReference.create({ data: ref });
+    }
   }
-  console.log(`   ✅ ${references.length} referencias bibliográficas creadas\n`);
+  console.log(`   ✅ Referencias bibliográficas verificadas/creadas\n`);
 
   // ═══════════════════════════════════════════
   // RESUMEN FINAL

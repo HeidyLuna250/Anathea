@@ -8,21 +8,7 @@ import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 import { useQuery } from '@tanstack/react-query';
 
-interface AnatomicalSystem {
-  id: string;
-  name: string;
-  nameEs: string;
-  slug: string;
-  color: string;
-  icon: string;
-  sortOrder: number;
-}
-
-async function fetchSystems(): Promise<AnatomicalSystem[]> {
-  const res = await fetch('/api/anatomy/systems');
-  if (!res.ok) throw new Error('Error al cargar los sistemas');
-  return res.json();
-}
+import { getAnatomicalSystems } from '../../services/api';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -40,7 +26,7 @@ export function Layout({ children }: LayoutProps) {
 
   const { data: systems = [], isLoading } = useQuery({
     queryKey: ['anatomical-systems'],
-    queryFn: fetchSystems,
+    queryFn: getAnatomicalSystems,
   });
 
   const handleSelectSystem = (slug: string) => {
