@@ -1,79 +1,77 @@
-/* ═══════════════════════════════════════════ */
-/* ANATHEA — Design System & Global Styles     */
-/* Tailwind CSS v4                             */
-/* ═══════════════════════════════════════════ */
+/* ═════════════════════════════════════════════════════════════════ */
+/* ANATHEA — Design System Médico & Científico 3D                    */
+/* Tailwind CSS v4 & Tokens de Alta Precisión                        */
+/* ═════════════════════════════════════════════════════════════════ */
 
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════ */
-/* CUSTOM THEME                                */
+/* TOKENS DEL SISTEMA DE DISEÑO                */
 /* ═══════════════════════════════════════════ */
 
 @theme {
-  /* Primary — Deep Medical Blue */
-  --color-primary-50: #EEF2FF;
-  --color-primary-100: #D9E2FE;
-  --color-primary-200: #B3C5FD;
-  --color-primary-300: #8DA8FC;
-  --color-primary-400: #678BFB;
-  --color-primary-500: #4F46E5;
-  --color-primary-600: #3730A3;
-  --color-primary-700: #312E81;
-  --color-primary-800: #1E1B4B;
-  --color-primary-900: #0F0D2E;
+  /* Fondo Principal & Superficies Médicas */
+  --color-medical-bg: #0A1628;
+  --color-medical-surface: #0F1E36;
+  --color-medical-elevated: #162846;
+  --color-medical-hover: #1A3258;
+  --color-medical-card: rgba(15, 30, 54, 0.75);
 
-  /* Accent — Vibrant Teal */
-  --color-accent-400: #2DD4BF;
-  --color-accent-500: #14B8A6;
-  --color-accent-600: #0D9488;
+  /* Acento Tecnológico e Interacción */
+  --color-cyan-base: #00D4FF;
+  --color-cyan-hover: #38E1FF;
+  --color-cyan-dark: #0099BA;
+  --color-cyan-glow: rgba(0, 212, 255, 0.35);
+  --color-cyan-subtle: rgba(0, 212, 255, 0.10);
+  --color-cyan-border: rgba(0, 212, 255, 0.30);
 
-  /* Surface — Dark Mode */
-  --color-surface-50: #F8FAFC;
-  --color-surface-100: #F1F5F9;
-  --color-surface-200: #E2E8F0;
-  --color-surface-700: #1E293B;
-  --color-surface-800: #0F172A;
-  --color-surface-900: #020617;
-  --color-surface-950: #010409;
+  /* Jerarquía de Texto */
+  --color-text-primary: #F8FAFC;
+  --color-text-secondary: #94A3B8;
+  --color-text-muted: #64748B;
+  --color-text-dim: #475569;
 
-  /* System Colors (Anatomy) */
-  --color-bone: #E8D44D;
-  --color-muscle: #E74C3C;
-  --color-nerve: #F1C40F;
-  --color-cardio: #C0392B;
-  --color-respiratory: #3498DB;
-  --color-digestive: #E67E22;
-  --color-urinary: #9B59B6;
-  --color-endocrine: #1ABC9C;
-  --color-lymphatic: #2ECC71;
-  --color-immune: #27AE60;
-  --color-skin: #D4A574;
-  --color-reproductive: #E91E90;
+  /* Bordes & Separadores */
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-border-medium: rgba(255, 255, 255, 0.14);
+  --color-border-active: rgba(0, 212, 255, 0.50);
 
-  /* Glassmorphism */
-  --color-glass: rgba(15, 23, 42, 0.7);
-  --color-glass-border: rgba(255, 255, 255, 0.08);
-  --color-glass-hover: rgba(255, 255, 255, 0.04);
+  /* Estados Clínicos */
+  --color-status-success: #10B981;
+  --color-status-warning: #F59E0B;
+  --color-status-danger: #EF4444;
+  --color-status-info: #00D4FF;
 
-  /* Typography */
+  /* Colores Anatómicos de Sistemas (Normalizados) */
+  --color-system-bone: #E8D44D;
+  --color-system-muscle: #E74C3C;
+  --color-system-nerve: #F1C40F;
+  --color-system-cardio: #C0392B;
+  --color-system-respiratory: #38BDF8;
+  --color-system-digestive: #F97316;
+  --color-system-urinary: #A855F7;
+  --color-system-endocrine: #14B8A6;
+  --color-system-lymphatic: #22C55E;
+  --color-system-immune: #10B981;
+  --color-system-skin: #D4A574;
+  --color-system-reproductive: #EC4899;
+
+  /* Tipografías */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Shadows */
-  --shadow-glow: 0 0 20px rgba(79, 70, 229, 0.3);
-  --shadow-glow-accent: 0 0 20px rgba(20, 184, 166, 0.3);
-  --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.12);
-  --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.24);
+  /* Sombras Especializadas */
+  --shadow-medical-glow: 0 0 20px rgba(0, 212, 255, 0.25);
+  --shadow-medical-glow-sm: 0 0 10px rgba(0, 212, 255, 0.20);
+  --shadow-medical-card: 0 4px 20px -2px rgba(0, 0, 0, 0.40);
+  --shadow-medical-elevated: 0 12px 36px -4px rgba(0, 0, 0, 0.60);
 
-  /* Border Radius */
-  --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
-
-  /* Animations */
-  --animate-fade-in: fade-in 0.5s ease-out;
-  --animate-slide-up: slide-up 0.4s ease-out;
-  --animate-slide-right: slide-right 0.3s ease-out;
-  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  /* Animaciones Funcionales */
+  --animate-fade-in: fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-up: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-down: slide-down 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-pulse-subtle: pulse-subtle 2.5s ease-in-out infinite;
+  --animate-pulse-selection: pulse-selection 1.5s ease-in-out infinite;
 }
 
 /* ═══════════════════════════════════════════ */
@@ -86,22 +84,27 @@
 }
 
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes slide-right {
-  from { opacity: 0; transform: translateX(-12px); }
-  to { opacity: 1; transform: translateX(0); }
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 8px rgba(79, 70, 229, 0.2); }
-  50% { box-shadow: 0 0 20px rgba(79, 70, 229, 0.5); }
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+@keyframes pulse-selection {
+  0%, 100% { box-shadow: 0 0 12px rgba(0, 212, 255, 0.4); }
+  50% { box-shadow: 0 0 24px rgba(0, 212, 255, 0.7); }
 }
 
 /* ═══════════════════════════════════════════ */
-/* BASE STYLES                                 */
+/* ESTILOS BASE & RESET                        */
 /* ═══════════════════════════════════════════ */
 
 * {
@@ -117,44 +120,66 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--color-surface-950);
-  color: var(--color-surface-100);
+  background-color: var(--color-medical-bg);
+  color: var(--color-text-primary);
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbar */
+/* Scrollbar Médico Discreto */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-surface-900);
+  background: var(--color-medical-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-surface-700);
-  border-radius: 3px;
+  background: var(--color-border-medium);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary-600);
+  background: var(--color-cyan-base);
 }
 
 /* ═══════════════════════════════════════════ */
-/* GLASS COMPONENTS                            */
+/* UTILIDADES DE INTERFAZ MÉDICA               */
 /* ═══════════════════════════════════════════ */
 
-.glass {
-  background: var(--color-glass);
-  backdrop-filter: blur(16px) saturate(1.5);
-  -webkit-backdrop-filter: blur(16px) saturate(1.5);
-  border: 1px solid var(--color-glass-border);
+/* Panel Glassmorphism Médico */
+.medical-panel {
+  background: var(--color-medical-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-medical-card);
 }
 
-.glass-hover:hover {
-  background: rgba(15, 23, 42, 0.85);
-  border-color: rgba(255, 255, 255, 0.12);
+.medical-panel-hover:hover {
+  background: rgba(22, 40, 70, 0.85);
+  border-color: var(--color-border-medium);
+}
+
+/* Retícula Quirúrgica / Técnica para el Visor 3D */
+.medical-grid {
+  background-color: var(--color-medical-bg);
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 70%);
+  background-size: 32px 32px, 32px 32px, 100% 100%;
+}
+
+/* Foco Accesible Estándar */
+.focus-ring {
+  outline: none;
+}
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-cyan-base);
+  outline-offset: 2px;
 }

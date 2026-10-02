@@ -1,131 +1,132 @@
 // ═══════════════════════════════════════════
 // ANATHEA — System 3D Page
+// Espacio Tridimensional & Panel Anatómico Clínico
 // ═══════════════════════════════════════════
 
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { Info, PanelRightOpen, Layers } from 'lucide-react';
 import { Viewer3D } from '../components/viewer3d/Viewer3D';
-import { Layers, Activity, FileText, Target } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { InfoPanel } from '../components/layout/InfoPanel';
 import { useAnatomyStore } from '../store/useAnatomyStore';
 import { getAnatomicalSystemBySlug } from '../services/api';
+import { ErrorState } from '../components/ui/ErrorState';
+import { Skeleton } from '../components/ui/Skeleton';
 
 export function SystemPage() {
   const { slug } = useParams<{ slug: string }>();
-  const [wireframe, setWireframe] = useState(false);
-  
-  // Estado global para la parte seleccionada
-  const selectedPartName = useAnatomyStore((state) => state.selectedPartName);
-  const setSelectedPart = useAnatomyStore((state) => state.setSelectedPart);
-  
-  // Limpiar selección cuando cambias de sistema
-  useEffect(() => {
-    setSelectedPart(null);
-  }, [slug, setSelectedPart]);
 
-  const { data: system, isLoading, error } = useQuery({
+  // Store global de ANATHEA
+  const setSelectedPart = useAnatomyStore((state) => state.setSelectedPart);
+  const setActiveSystemSlug = useAnatomyStore((state) => state.setActiveSystemSlug);
+  const isInfoPanelOpen = useAnatomyStore((state) => state.isInfoPanelOpen);
+  const setInfoPanelOpen = useAnatomyStore((state) => state.setInfoPanelOpen);
+  const toggleInfoPanel = useAnatomyStore((state) => state.toggleInfoPanel);
+
+  // Sincronizar slug activo con el store
+  useEffect(() => {
+    if (slug) {
+      setActiveSystemSlug(slug);
+      setSelectedPart(null); // Limpiar selección al cambiar de sistema
+    }
+  }, [slug, setActiveSystemSlug, setSelectedPart]);
+
+  const {
+    data: system,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['anatomical-system', slug],
     queryFn: () => getAnatomicalSystemBySlug(slug!),
     enabled: !!slug,
   });
 
+  // Estado de carga con Skeleton UI Médico
   if (isLoading) {
     return (
-      <div className="w-full h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
-          <p className="text-surface-200/50 text-sm animate-pulse">Cargando atlas 3D...</p>
+      <div className="w-full h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center medical-grid relative select-none">
+        <div className="flex flex-col items-center gap-4 p-8 rounded-2xl bg-[#0F1E36]/80 border border-white/10 backdrop-blur-md shadow-2xl">
+          <div className="relative">
+            <div className="w-14 h-14 rounded-full border-2 border-[#00D4FF]/20 border-t-[#00D4FF] animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#00D4FF] animate-pulse" />
+            </div>
+          </div>
+          <div className="text-center space-y-1">
+            <h3 className="text-sm font-semibold text-[#F8FAFC]">
+              Inicializando Visor 3D y Datos Anatómicos
+            </h3>
+            <p className="text-xs text-[#94A3B8] font-mono">
+              Calibrando mallas y coordenadas biomédicas...
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
+  // Estado de error clínico
   if (error || !system) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center text-surface-200/50">
-        <h2 className="text-xl font-semibold mb-2">Error</h2>
-        <p>No se pudo cargar el sistema anatómico.</p>
+      <div className="w-full h-[calc(100vh-3.5rem)] flex items-center justify-center p-6 medical-grid">
+        <ErrorState
+          title="Error al cargar el sistema anatómico"
+          message={`No se pudo obtener la información anatómica para el parámetro "${slug}". Verifica la conexión con el servidor.`}
+          onRetry={() => refetch()}
+          className="max-w-md bg-[#0F1E36]/90 backdrop-blur-md shadow-2xl"
+        />
       </div>
     );
   }
 
   return (
-    <div className="flex w-full h-[calc(100vh-4rem)] animate-fade-in relative">
-      
-      {/* 3D Canvas Area */}
-      <div className="flex-1 relative bg-surface-950">
-        <Viewer3D 
-          modelPath="/models/placeholder.glb" 
-          wireframe={wireframe}
-          color={system.color || undefined}
+    <div className="relative flex w-full h-[calc(100vh-3.5rem)] overflow-hidden select-none bg-[#0A1628]">
+      {/* 1. Visor 3D Central (Protagonista principal de ANATHEA) */}
+      <div className="flex-1 relative h-full">
+        <Viewer3D
+          modelPath="/models/placeholder.glb"
+          color={system.color || '#E8D44D'}
+          systemName={system.nameEs}
         />
-        
-        {/* Floating Controls Overlay */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 glass px-4 py-2 rounded-full flex gap-4">
-          <button 
-            onClick={() => setWireframe(!wireframe)}
-            className={`flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${wireframe ? 'bg-primary-500 text-white' : 'hover:bg-white/10'}`}
+
+        {/* Botón flotante para abrir panel en móvil si está cerrado */}
+        {!isInfoPanelOpen && (
+          <button
+            onClick={() => setInfoPanelOpen(true)}
+            className="absolute bottom-5 right-5 z-20 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0F1E36]/90 hover:bg-[#162846] text-[#00D4FF] border border-[#00D4FF]/40 shadow-xl backdrop-blur-md text-xs font-semibold cursor-pointer transition-all hover:scale-105"
+            aria-label="Abrir panel de información médica"
           >
-            <Layers size={14} />
-            Malla (Wireframe)
+            <Info size={15} />
+            <span>Ficha Médica</span>
           </button>
-        </div>
-      </div>
-
-      {/* Information Panel (Right Side) */}
-      <div className="w-80 glass border-l border-white/5 p-6 flex flex-col gap-6 overflow-y-auto">
-        <header>
-          <div className="flex items-center gap-3 mb-2">
-            <span 
-              className="w-3 h-3 rounded-full shadow-glow"
-              style={{
-                backgroundColor: system.color || '#38bdf8',
-                boxShadow: system.color ? `0 0 10px ${system.color}` : 'none',
-              }}
-            />
-            <h1 className="text-xl font-bold text-white">{system.nameEs}</h1>
-          </div>
-          <p className="text-xs text-surface-200/60 font-mono">{system.nameLa || system.name}</p>
-        </header>
-
-        {/* 🎯 SECCIÓN INTERACTIVA (PILOTO 3D) */}
-        {selectedPartName && (
-          <div className="bg-primary-500/10 border border-primary-500/20 rounded-xl p-4 animate-slide-up">
-            <h3 className="text-xs font-bold text-primary-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-              <Target size={14} /> Selección Activa
-            </h3>
-            <p className="text-lg font-semibold text-white">{selectedPartName.replace(/_/g, ' ')}</p>
-            <p className="text-xs text-surface-200/60 mt-1">
-              Información específica del órgano no encontrada en la base de datos temporal.
-            </p>
-          </div>
-        )}
-
-        <section>
-          <h3 className="text-sm font-semibold text-primary-300 flex items-center gap-2 mb-2">
-            <FileText size={16} /> Descripción General
-          </h3>
-          <p className="text-sm text-surface-200/80 leading-relaxed text-justify">
-            {system.description}
-          </p>
-        </section>
-
-        {system.organs && system.organs.length > 0 && (
-          <section>
-            <h3 className="text-sm font-semibold text-accent-400 flex items-center gap-2 mb-3">
-              <Activity size={16} /> Órganos Principales
-            </h3>
-            <ul className="space-y-2">
-              {system.organs.map((organ: any) => (
-                <li key={organ.id} className="text-sm bg-white/5 px-3 py-2 rounded-lg border border-white/5 hover:bg-white/10 cursor-pointer transition-colors">
-                  {organ.nameEs}
-                </li>
-              ))}
-            </ul>
-          </section>
         )}
       </div>
 
+      {/* 2. Panel de Información Derecho (Ficha clínica, biomecánica y bibliográfica) */}
+      <div
+        className={`fixed lg:relative right-0 top-14 lg:top-0 bottom-0 z-40 transition-all duration-300 ease-in-out ${
+          isInfoPanelOpen
+            ? 'translate-x-0 opacity-100'
+            : 'translate-x-full opacity-0 pointer-events-none lg:w-0'
+        }`}
+      >
+        <InfoPanel
+          system={system}
+          isOpen={isInfoPanelOpen}
+          onClose={() => setInfoPanelOpen(false)}
+        />
+      </div>
+
+      {/* Backdrop overlay para dispositivos móviles cuando el panel de información está abierto */}
+      {isInfoPanelOpen && (
+        <div
+          onClick={() => setInfoPanelOpen(false)}
+          className="fixed inset-0 top-14 bg-black/60 backdrop-blur-xs z-30 lg:hidden animate-fade-in"
+          aria-hidden="true"
+        />
+      )}
     </div>
   );
 }
